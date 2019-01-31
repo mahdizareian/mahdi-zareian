@@ -1,0 +1,16 @@
+from decimal import *
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import *
+
+customer = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/customer.parquet")
+orders = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/orders.parquet")
+
+
+selin = orders.filter(orders.O_COMMENT.not.like('%QUICK%DEPOSITS%'))\
+.join(orders , customer.C_CUSTKEY == orders.O_CUSTKEY )
+.select(customer.C_CUSTKEY , (orders.O_ORDERKEY).alias("value"))\
+.groupBY(customer.C_CUSTKEY)\
+.agg(F.sum("value").alias("sum"))
+
+query13 = 

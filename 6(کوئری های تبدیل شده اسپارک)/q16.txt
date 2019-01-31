@@ -1,0 +1,40 @@
+from decimal import *
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import *
+
+part = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/part.parquet")
+partsupp = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/partsupp.parquet")
+supplier = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/supplier.parquet")
+
+selin = supplier.filter(supplier.S_COMMENT.like('%Customer%Complaints%'))\
+.select(supplier.S_SUPPKEY)
+
+part_filter = part.filter((part.P_BRAND =! "BRAND#14") & ( part.P_TYPE.like('STANDARD%')) & (part.P_SIZE.isin([26, 42, 9, 4, 39, 27, 24, 25])))
+
+query16= partsupp.filter(partsupp.PS_SUPPKEY.isin(selin) == False)\
+.join(part_filter, partsupp.PS_PARTKEY == part_filter.P_PARTKEY )\
+.select(part_filter.P_BRAND , part_filter.P_TYPE , part_filter.P_SIZE )\
+.groupBy(part_filter.P_BRAND , part_filter.P_TYPE , part_filter.P_SIZE)\
+.orderBy(part_filter.P_BRAND , part_filter.P_TYPE , part_filter.P_SIZE)
+
+
+
+
+**************************
+It worked :)
+
+I had to use the negation operator (~) instead of the 'not' keyword.
+
+df.where(~ col("_c2").like("XY6%")).show(5)
+......................
+isin(*cols)[source]
+A boolean expression that is evaluated to true if the value of this expression is contained by the evaluated values of the arguments.
+
+>>> df[df.name.isin("Bob", "Mike")].collect()
+[Row(age=5, name='Bob')]
+>>> df[df.age.isin([1, 2, 3])].collect()
+[Row(age=2, name='Alice')]
+......................................
+array = [1, 2, 3]
+dataframe.filter(dataframe.column.isin(*array) == False)

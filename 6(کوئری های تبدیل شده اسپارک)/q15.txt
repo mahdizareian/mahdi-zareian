@@ -1,0 +1,23 @@
+from decimal import *
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import *
+
+lineitem = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/lineitem.parquet")
+supplier = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/supplier.parquet")
+
+func1 = lambda x , y : x * (1 - y)
+
+selview = lineitem.filter((lineitem.L_SHIPDATE >= '1997.3.2' ) & (lineitem.L_SHIPDATE < '1997.3.5'))\
+.select((lineitem.L_SUPPKEY).alias("supplier_no") , func1(lineitem.L_EXTENDEDPRICE , lineitem.L_DISCOUNT ).alias("value") )\
+.groupBy(lineitem.L_suppkey)\
+.agg(F.sum("value").alias("total_revenue"))
+
+query15 = selview.filter ( selview.total_revenue = (agg(F.max(selview.total_revenue))))\
+.join(supplier, selview.supplier_no == supplier.S_SUPPKEY )\
+.select(supplier.S_SUPPKEY , supplier.S_NAME , supplier.S_ADDRESS , supplier.S_PHONE , selview.total_revenue )\
+.orderBy ( supplier.S_SUPPKEY)
+
+***** pichondane view *****
+
+

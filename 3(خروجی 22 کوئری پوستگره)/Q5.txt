@@ -1,0 +1,18 @@
+--------------------------------------
+ Sort  (cost=20490518.18..20490518.60 rows=170 width=136) (actual time=6589490.4
+35..6589490.436 rows=5 loops=1)
+   Sort Key: (sum((lineitem.l_extendedprice * ('1'::numeric - lineitem.l_discoun
+t)))) DESC
+   Sort Method: quicksort  Memory: 25kB
+   ->  Finalize GroupAggregate  (cost=20490364.33..20490511.88 rows=170 width=13
+6) (actual time=6589321.591..6589489.485 rows=5 loops=1)
+         Group Key: nation.n_name
+         ->  Gather Merge  (cost=20490364.33..20490507.20 rows=340 width=136) (a
+ctual time=6589279.520..6593800.970 rows=15 loops=1)
+               Workers Planned: 2
+               Workers Launched: 2
+               ->  Partial GroupAggregate  (cost=20489364.31..20489467.93 rows=1
+70 width=136) (actual time=6588831.109..6588993.375 rows=5 loops=3)
+                     Group Key: nation.n_name
+                     ->  Sort  (cost=20489364.31..20489384.61 rows=8120 width=11
+6) (actual time=6588790.664..6588846.590 rows=219861 loops=3)

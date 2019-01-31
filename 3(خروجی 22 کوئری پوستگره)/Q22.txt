@@ -1,0 +1,35 @@
+   QUERY PLAN
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize GroupAggregate  (cost=5747740.24..5755882.55 rows=61000 width=72) (actual time=906019.586..906019.587 rows=0 loops=1)
+   Group Key: ("substring"((customer.c_phone)::text, 1, 2))
+   InitPlan 1 (returns $1)
+     ->  Finalize Aggregate  (cost=536639.75..536639.76 rows=1 width=32) (actual time=148496.658..148496.658 rows=1 loops=1)
+           ->  Gather  (cost=536639.53..536639.74 rows=2 width=32) (actual time=148496.366..148496.727 rows=3 loops=1)
+                 Workers Planned: 2
+                 Workers Launched: 2
+                 ->  Partial Aggregate  (cost=535639.53..535639.54 rows=1 width=32) (actual time=148041.092..148041.093 rows=1 loops=3)
+                       ->  Parallel Seq Scan on customer customer_1  (cost=0.00..535142.60 rows=198773 width=6) (actual time=148041.075..148041.075 rows=0 loops=3)
+                             Filter: ((c_acctbal > 0.00) AND ("substring"((c_phone)::text, 1, 2) = ANY ('{:1,:2,:3,:4,:5,:6,:7}'::text[])))
+                             Rows Removed by Filter: 5000000
+   ->  Gather Merge  (cost=5211100.48..5217666.95 rows=50834 width=72) (actual time=906019.580..907335.993 rows=0 loops=1)
+         Workers Planned: 2
+         Params Evaluated: $1
+         Workers Launched: 2
+         ->  Partial GroupAggregate  (cost=5210100.45..5210799.42 rows=25417 width=72) (actual time=757452.924..757452.924 rows=0 loops=3)
+               Group Key: ("substring"((customer.c_phone)::text, 1, 2))
+               ->  Sort  (cost=5210100.45..5210163.99 rows=25417 width=38) (actual time=757452.917..757452.917 rows=0 loops=3)
+                     Sort Key: ("substring"((customer.c_phone)::text, 1, 2))
+                     Sort Method: quicksort  Memory: 25kB
+                     Worker 0:  Sort Method: quicksort  Memory: 25kB
+                     Worker 1:  Sort Method: quicksort  Memory: 25kB
+                     ->  Parallel Hash Anti Join  (cost=4426927.50..5208240.75 rows=25417 width=38) (actual time=757437.770..757437.930 rows=0 loops=3)
+                           Hash Cond: (customer.c_custkey = orders.o_custkey)
+                           ->  Parallel Seq Scan on customer  (cost=0.00..535142.60 rows=72912 width=26) (actual time=59424.799..59424.799 rows=0 loops=3)
+                                 Filter: ((c_acctbal > $1) AND ("substring"((c_phone)::text, 1, 2) = ANY ('{:1,:2,:3,:4,:5,:6,:7}'::text[])))
+                                 Rows Removed by Filter: 5000000
+                           ->  Parallel Hash  (cost=3401577.33..3401577.33 rows=62497533 width=8) (actual time=455817.384..455817.384 rows=50000000 loops=3)
+                                 Buckets: 131072  Batches: 2048  Memory Usage: 4064kB
+                                 ->  Parallel Seq Scan on orders  (cost=0.00..3401577.33 rows=62497533 width=8) (actual time=15.411..419984.958 rows=50000000 loops=3)
+ Planning Time: 288.886 ms
+ Execution Time: 907336.412 ms
+(32 rows)

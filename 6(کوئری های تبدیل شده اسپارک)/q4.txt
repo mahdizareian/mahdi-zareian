@@ -1,0 +1,22 @@
+from decimal import *
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import *
+
+orders = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/orders.parquet")
+lineitem = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/lineitem.parquet")
+
+orders_filter = orders.filter(orders.O_ORDERDATE >= "1997-8-6") & ( orders.O_ORDERDATE < "1997-8-9" )
+
+selin= select( F.when(lineitem.L_COMMITDATE < lineitem.L_RECEIPDATE , * ))
+
+
+query4 = semijoin(orders_filter, selin.
+
+
+
+
+
+
+
+** piade sazi exist **

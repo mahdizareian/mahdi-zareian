@@ -1,0 +1,47 @@
+from decimal import *
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import *
+
+nation = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/nation.parquet")
+lineitem = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/lineitem.parquet")
+orders = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/orders.parquet")
+customer = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/customer.parquet")
+supplier = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/supplier.parquet")
+part = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/part.parquet")
+partsupp = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/partsupp.parquet")
+region = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/region.parquet")
+
+func1 = lambda x, y : x * (1-y)
+
+Year = lambda x : x[0: 4]
+
+n1 = nation.alias ("n1")
+n2 = nation.alias ("n2")
+
+selin = part.filter(part.P_type == "SMALL PLATED NICKEL")\
+.orders.filter((orders.O_ORDERDATE  > "1995-01-01" ) & (orders.O_ORDERDATE < "1996-12-31"))\
+.region.filter(region.R_NAME == "ASIA")\
+.join(supplier,lineitem.L_SUPPKEY == supplier.S_SUPPKEY)\
+.join(lineitem, orders.O_ORDERKEY == lineitem.L_ORDERKEY)\
+.join(orders, customer.C_CUSTKEY == orders.O_CUSTKEY)\
+.join(customer,n1.N_NATIONKEY == customer.C_NATIONKEY)\
+.join(n1, region.R_REGIONKEY == n1.N_REGIONKEY )\
+.join(supplier, n2.N_NATIONKEY == supplier.S_NATIONKEY)\
+.select(                 .alias("O_YEAR") , func1(lineitem.L_EXTENDEDPRICE , lineitem.L_DISCOUNT).alias("volume")).alias("all_nations")\
+
+query8 = 
+
+
+
+
+
+.groupBY(o_year)\
+.orderBy(o_year)
+
+**** piade kardane select asli *****
+****** piade kardane :
+sum(case
+		when nation = 'CHINA' then volume
+		else 0
+	end) / sum(volume) as mkt_share  ************

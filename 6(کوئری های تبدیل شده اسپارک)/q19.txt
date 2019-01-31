@@ -1,0 +1,28 @@
+from decimal import *
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import *
+
+lineitem = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/lineitem.parquet")
+part = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/part.parquet")
+
+func1 = lambda x , y : x * (1-y)
+
+sel1 = lineitem.filter((lineitem.L_SHIPMODE.isin(["AIR", "AIR REG"])) & (lineitem.L_SHIPINSTRUCT == "DELIVER IN PERSON") & (lineitem.L_QUANTITY >= 7) & (lineitem.L_QUANTITY <= 16))\
+.part.filter((part.P_BRAND == "BRAND#34") & (part.P_CONTAINER.isin(["SM CASE", "SM BOX", "SM PACK", "SM PKG"])) & (1 < part.P_SIZE < 5)\
+.join(part , lineitem.L_PARTKEY == part.P_PARTKEY)\
+
+sel2 = lineitem.filter((lineitem.L_SHIPMODE.isin(["AIR", "AIR REG"])) & (lineitem.L_SHIPINSTRUCT == "DELIVER IN PERSON") & (lineitem.L_QUANTITY >= 10) & (lineitem.L_QUANTITY <= 20))\
+.part.filter((part.P_BRAND == "BRAND#41") & (part.P_CONTAINER.isin(["MED BAG", "MED BOX", "MED PKG", "MED PACK"])) & (1 < part.P_SIZE < 10)\
+.join(part , lineitem.L_PARTKEY == part.P_PARTKEY)\
+
+sel3 = lineitem.filter((lineitem.L_SHIPMODE.isin(["AIR", "AIR REG"])) & (lineitem.L_SHIPINSTRUCT == "DELIVER IN PERSON") & (lineitem.L_QUANTITY >= 13) & (lineitem.L_QUANTITY <= 23))\
+.part.filter((part.P_BRAND == "BRAND#35") & (part.P_CONTAINER.isin(["LG CASE", "LG BOX", "LG PACK", "LG PKG"])) & (1 < part.P_SIZE < 15)\
+.join(part , lineitem.L_PARTKEY == part.P_PARTKEY)\
+
+query19 = 
+.select( func1(lineitem.L_EXTENDEDPRICE , lineitem.L_DISCOUNT ))
+
+
+***********************
+paide sazi or 3 ta select dar ghesmate akhar 

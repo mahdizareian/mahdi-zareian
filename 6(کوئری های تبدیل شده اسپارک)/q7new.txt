@@ -1,0 +1,40 @@
+from decimal import *
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import *
+
+nation = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/nation.parquet")
+lineitem = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/lineitem.parquet")
+orders = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/orders.parquet")
+customer = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/customer.parquet")
+supplier = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/supplier.parquet")
+
+func1 = lambda x , y : x * (1-y)
+
+Year = lambda x : x[0: 4]
+
+lineitem_filter = lineitem.filter((lineitem.L_SHIPDATE >= "1995-01-01") & (lineitem.L_SHIPDATE <= "1996-12-31"))
+
+INDIA_CHINA = nation.filter((nation.N_NAME == "INDIA") | (nation.N_NAME == "CHINA"))
+
+nation_customer = INDIA_CHINA.join(customer, INDIA_CHINA.N_NATIONKEY == customer.C_NATIONKEY)\
+ .join(orders, customer.C_CUSTKEY == orders.O_CUSTKEY)\
+ .select( orders.O_ORDERKEY , INDIA_CHINA.N_NAME.alias("cust_nation"))
+	
+nation_supplier = INDIA_CHINA.join(supplier, INDIA_CHINA.N_NATIONKEY == supplier.S_NATIONKEY) \
+ .join(lineitem_filter, supplier.S_SUPPKEY == lineitem_filter.L_SUPPKEY) \
+ .select( lineitem_filter.L_ORDERKEY, IN.N_NAME.alias("supp_nation"),  lineitem_filter.L_DISCOUNT, lineitem_filter.L_EXTENDEDPRICE , lineitem_filter.L_SHIPDATE)
+ 
+selin=INDIA_CHINA.join(nation_supplier , orders.O_ORDERKEY == INDIA_CHINA.L_ORDERKEY )\
+.filter(((INDIA_CHINA.supp_nation == "INDIA") & ( nation_customer.cust_nation == "CHINA" ))| (( nation_customer.cust_nation == "INDIA") & (INDIA_CHINA.supp_nation == "CHINA")))\
+.select (cust_nation.cust_nation , nation_supplier.supp_nation , func1(lineitem_filter.L_EXTENDEDPRICE , lineitem_filter.L_DISCOUNT ).alias("volume") , Year(lineitem_filter.L_SHIPDATE).alias("l_year"))
+
+query7 = selin.groupBy(selin.l_year , selin.cust_nation , nation_supplier.supp_nation )\
+.agg(F.sum("volume").alias("revenue"))\
+.sort(selin.l_year , selin.cust_nation , nation_supplier.supp_nation).show()
+
+
+
+
+
+// chon az chizayi mesle l_year ya volume va .. mikhaym dobare to group by va sort  estefade konim majborim ghesmate akhar ro dobare ba query7 benivisim ! //

@@ -1,0 +1,8 @@
+from pyspark import SparkContext
+from pyspark.sql import SQLContext
+
+lineitem = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/lineitem.parquet")
+
+lineitem.write.mode('overwrite').format("com.databricks.spark.avro").save("hdfs://namenode:8020/mahdi-avro-data/lineitem.avro")
+
+lineitem = spark.read.format("com.databricks.spark.avro").load("hdfs://namenode:8020/mahdi-avro-data/lineitem.avro")

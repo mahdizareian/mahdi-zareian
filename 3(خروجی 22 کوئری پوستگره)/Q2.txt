@@ -1,0 +1,50 @@
+ QUERY PLAN
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=2982908.52..2982908.52 rows=1 width=270) (actual time=103121.964..103121.964 rows=0 loops=1)
+   ->  Sort  (cost=2982908.52..2982908.52 rows=1 width=270) (actual time=103121.962..103121.962 rows=0 loops=1)
+         Sort Key: supplier.s_acctbal DESC, nation.n_name, supplier.s_name, part.p_partkey
+         Sort Method: quicksort  Memory: 25kB
+         ->  Hash Join  (cost=2392978.47..2982908.51 rows=1 width=270) (actual time=103121.881..103121.881 rows=0 loops=1)
+               Hash Cond: ((part.p_partkey = partsupp.ps_partkey) AND ((SubPlan 1) = partsupp.ps_supplycost))
+               ->  Gather  (cost=1000.00..538907.29 rows=39 width=30) (actual time=103121.878..103123.592 rows=0 loops=1)
+                     Workers Planned: 2
+                     Workers Launched: 2
+                     ->  Parallel Seq Scan on part  (cost=0.00..537903.39 rows=16 width=30) (actual time=103117.137..103117.138 rows=0 loops=3)
+                           Filter: (((p_type)::text ~~ '%steel'::text) AND (p_size = 25))
+                           Rows Removed by Filter: 6666667
+               ->  Hash  (cost=2368844.71..2368844.71 rows=470384 width=254) (never executed)
+                     ->  Gather  (cost=29861.62..2368844.71 rows=470384 width=254) (never executed)
+                           Workers Planned: 2
+                           Workers Launched: 0
+                           ->  Parallel Hash Join  (cost=28861.62..2320806.31 rows=195993 width=254) (never executed)
+                                 Hash Cond: (partsupp.ps_suppkey = supplier.s_suppkey)
+                                 ->  Parallel Seq Scan on partsupp  (cost=0.00..2166182.40 rows=33318840 width=22) (never executed)
+                                 ->  Parallel Hash  (cost=28830.99..28830.99 rows=2451 width=244) (never executed)
+                                       ->  Hash Join  (cost=24.31..28830.99 rows=2451 width=244) (never executed)
+                                             Hash Cond: (supplier.s_nationkey = nation.n_nationkey)
+                                             ->  Parallel Seq Scan on supplier  (cost=0.00..27219.67 rows=416667 width=148) (never executed)
+                                             ->  Hash  (cost=24.29..24.29 rows=1 width=108) (never executed)
+                                                   ->  Hash Join  (cost=12.14..24.29 rows=1 width=108) (never executed)
+                                                         Hash Cond: (nation.n_regionkey = region.r_regionkey)
+                                                         ->  Seq Scan on nation  (cost=0.00..11.70 rows=170 width=116) (never executed)
+                                                         ->  Hash  (cost=12.12..12.12 rows=1 width=4) (never executed)
+                                                               ->  Seq Scan on region  (cost=0.00..12.12 rows=1 width=4) (never executed)
+                                                                     Filter: (r_name = 'ASIA'::bpchar)
+               SubPlan 1
+                 ->  Aggregate  (cost=1843.19..1843.20 rows=1 width=32) (never executed)
+                       ->  Nested Loop  (cost=13.13..1843.19 rows=1 width=6) (never executed)
+                             Join Filter: (supplier_1.s_nationkey = nation_1.n_nationkey)
+                             ->  Hash Join  (cost=12.14..24.29 rows=1 width=4) (never executed)
+                                   Hash Cond: (nation_1.n_regionkey = region_1.r_regionkey)
+                                   ->  Seq Scan on nation nation_1  (cost=0.00..11.70 rows=170 width=12) (never executed)
+                                   ->  Hash  (cost=12.12..12.12 rows=1 width=4) (never executed)
+                                         ->  Seq Scan on region region_1  (cost=0.00..12.12 rows=1 width=4) (never executed)
+                                               Filter: (r_name = 'ASIA'::bpchar)
+                             ->  Nested Loop  (cost=0.99..1816.66 rows=179 width=14) (never executed)
+                                   ->  Index Scan using partsupp_pkey on partsupp partsupp_1  (cost=0.57..325.45 rows=179 width=14) (never executed)
+                                         Index Cond: (part.p_partkey = ps_partkey)
+                                   ->  Index Scan using supplier_pkey on supplier supplier_1  (cost=0.42..8.33 rows=1 width=12) (never executed)
+                                         Index Cond: (s_suppkey = partsupp_1.ps_suppkey)
+ Planning Time: 599.646 ms
+ Execution Time: 103124.012 ms
+(47 rows)

@@ -1,0 +1,18 @@
+from decimal import *
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import *
+
+
+lineitem = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/lineitem.parquet")
+
+func1 = lambda x , y : x * (1-y)
+func2 = lambda x ,y , z : x * (1-y) * (1+z)
+
+query1 = lineitem.filter( lineitem.L_SHIPDATE < "1998-12-01")\
+.select(lineitem.L_RETURNFLAG , lineitem.L_LINESTATUS , lineitem.L_QUANTITY , lineitem.L_EXTENDEDPRICE , lineitem.L_DISCOUNT , lineitem.L_TAX   )\
+.groupBy(lineitem.L_RETURNFLAG , lineitem.L_LINESTATUS )\
+.agg(F.sum(lineitem.L_QUANTITY).alias("sum_qty") , F.sum(lineitem.L_EXTENDEDPRICE).alias("sum_base_price") , F.avg(lineitem.L_QUANTITY).alias("avg_qty") , F.avg(lineitem.L_EXTENDEDPRICE).alias("avg_price") , F.avg(lineitem.L_DISCOUNT).alias("avg_disc") ,
+ F.avg(func1(lineitem.L_EXTENDEDPRICE , lineitem.L_EXTENDEDPRICE )).alias("sum_disc_price") , F.avg(func2(lineitem.L_EXTENDEDPRICE, lineitem.L_DISCOUNT , lineitem.L_TAX)).alias("sum_charge"))\
+.orderBy(lineitem.L_RETURNFLAG , lineitem.L_LINESTATUS).show()
+

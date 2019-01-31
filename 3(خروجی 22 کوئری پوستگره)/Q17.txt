@@ -1,0 +1,23 @@
+
+                                                                  QUERY PLAN
+----------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=220803615.47..220803615.48 rows=1 width=32) (actual time=377464.145..377464.145 rows=1 loops=1)
+   ->  Hash Join  (cost=538903.50..220803615.44 rows=10 width=8) (actual time=377464.138..377464.144 rows=0 loops=1)
+         Hash Cond: (lineitem.l_partkey = part.p_partkey)
+         Join Filter: (lineitem.l_quantity < (SubPlan 1))
+         ->  Seq Scan on lineitem  (cost=0.00..18519757.64 rows=599000064 width=21) (actual time=0.012..0.012 rows=1 loops=1)
+         ->  Hash  (cost=538903.49..538903.49 rows=1 width=4) (actual time=377464.113..377464.113 rows=0 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 8kB
+               ->  Gather  (cost=1000.00..538903.49 rows=1 width=4) (actual time=377464.112..377466.778 rows=0 loops=1)
+                     Workers Planned: 2
+                     Workers Launched: 2
+                     ->  Parallel Seq Scan on part  (cost=0.00..537903.39 rows=1 width=4) (actual time=377459.948..377459.949 rows=0 loops=3)
+                           Filter: ((p_brand = 'BRAND#35'::bpchar) AND (p_container = 'LG JAR'::bpchar))
+                           Rows Removed by Filter: 6666667
+         SubPlan 1
+           ->  Aggregate  (cost=20017257.89..20017257.90 rows=1 width=32) (never executed)
+                 ->  Seq Scan on lineitem lineitem_1  (cost=0.00..20017257.80 rows=34 width=5) (never executed)
+                       Filter: (l_partkey = part.p_partkey)
+ Planning Time: 0.393 ms
+ Execution Time: 377466.882 ms
+(19 rows)

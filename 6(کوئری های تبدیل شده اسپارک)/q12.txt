@@ -1,0 +1,29 @@
+from decimal import *
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import *
+
+
+lineitem = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/lineitem.parquet")
+orders = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/orders.parquet")
+
+query12 = lineitem.filter((lineitem.L_RECEIPTDATE >= "1997.2.1") & (lineitem.L_RECEIPTDATE < "1998.2.1") & (lineitem.L_COMMITDATE < lineitem.L_RECEIPTDATE) & (lineitem.L_SHIPMODE.isin(["RAIL" , "TRUCK"])\
+.join(orders, lineitem.L_ORDERKEY == orders.O_ORDERKEY )\
+.select(lineitem.L_SHIPMODE , F.when((orders.O_ORDERPRIORITY == "1-URGENT") & (orders.O_ORDERPRIORITY == " 2-HIGH " ), 1) .otherwise(0)
+
+
+.groupBY(lineitem.L_SHIPMODE)\
+.orderBY(lineitem.L_SHIPMODE)
+
+
+
+// piade sazi ghesmate dovome case //
+************************************************************************************
+
+sin(*cols)[source]
+A boolean expression that is evaluated to true if the value of this expression is contained by the evaluated values of the arguments.
+
+>>> df[df.name.isin("Bob", "Mike")].collect()
+[Row(age=5, name='Bob')]
+>>> df[df.age.isin([1, 2, 3])].collect()
+[Row(age=2, name='Alice')]

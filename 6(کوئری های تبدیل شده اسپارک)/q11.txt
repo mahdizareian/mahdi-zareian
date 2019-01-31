@@ -1,0 +1,55 @@
+from decimal import *
+from pyspark.sql.types import *
+from pyspark.sql import functions as F
+from pyspark.sql import *
+
+partsupp = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/partsupp.parquet")
+supplier = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/supplier.parquet")
+nation = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/nation.parquet")
+
+func1 = lambda x , y : (x * y) * 2
+
+havsel = nation.filter(nation.N_NAME == "MOROCCO")\
+.join(supplier, nation.N_NATIONKEY == supplier.S_NATIONKEY)\
+.join(partsupp, supplier.S_SUPPKEY == partsupp.PS_SUPPKEY)\
+.select(func1(partsupp.PS_SUPPLYCOST , partsupp.PS_AVAILQTY).alias("invalue"))
+
+query11 = nation.filter(nation.N_NAME == "MOROCCO")\
+.join(supplier, nation.N_NATIONKEY == supplier.S_NATIONKEY )\
+.join(partsupp, supplier.S_SUPPKEY == partsupp.PS_SUPPKEY)\
+.select(partsupp.PS_PARTKEY , func1( partsupp.PS_SUPPLYCOST , partsupp.PS_AVAILQTY).alias("value"))\
+.groupBY(partsupp.PS_PARTKEY)
+.agg(F.sum(partsupp.PS_SUPPLYCOST * partsupp.PS_AVAILQTY).alias("sumvalue"))
+.filter("sumvalue" > havesel.invalue )
+.orderBy("value".ascending=False )
+
+
+
+
+// mige dataframe attribute be name group by nadare :/ !
+
+
+....................................................................
+isin(*cols)[source]
+A boolean expression that is evaluated to true if the value of this expression is contained by the evaluated values of the arguments.
+
+>>> df[df.name.isin("Bob", "Mike")].collect()
+[Row(age=5, name='Bob')]
+>>> df[df.age.isin([1, 2, 3])].collect()
+[Row(age=2, name='Alice')]
+...................................................................
+otherwise(value)[source]
+Evaluates a list of conditions and returns one of multiple possible result expressions. If Column.otherwise() is not invoked, None is returned for unmatched conditions.
+
+See pyspark.sql.functions.when() for example usage.
+
+Parameters:	value – a literal value, or a Column expression.
+>>> from pyspark.sql import functions as F
+>>> df.select(df.name, F.when(df.age > 3, 1).otherwise(0)).show()
++-----+-------------------------------------+
+| name|CASE WHEN (age > 3) THEN 1 ELSE 0 END|
++-----+-------------------------------------+
+|Alice|                                    0|
+|  Bob|                                    1|
+......................................................................
+df.groupBy(someExpr).agg(somAgg).where(somePredicate) 

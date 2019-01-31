@@ -1,0 +1,8 @@
+from pyspark import SparkContext
+from pyspark.sql import SQLContext
+
+orders = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/orders.parquet")
+
+orders.write.mode('overwrite').format("com.databricks.spark.avro").save("hdfs://namenode:8020/mahdi-avro-data/orders.avro")
+
+orders = spark.read.format("com.databricks.spark.avro").load("hdfs://namenode:8020/mahdi-avro-data/orders.avro")

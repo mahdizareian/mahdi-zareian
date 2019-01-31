@@ -1,0 +1,25 @@
+      QUERY PLAN                            
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize GroupAggregate  (cost=23258660.21..23282812.29 rows=7 width=27) (actual time=16332730.096..16332730.735 rows=2 loops=1)
+   Group Key: lineitem.l_shipmode
+   ->  Gather Merge  (cost=23258660.21..23282812.12 rows=14 width=27) (actual time=16332430.587..16411701.412 rows=6 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Partial GroupAggregate  (cost=23257660.19..23281810.48 rows=7 width=27) (actual time=16332405.129..16332703.831 rows=2 loops=3)
+               Group Key: lineitem.l_shipmode
+               ->  Sort  (cost=23257660.19..23260678.97 rows=1207511 width=27) (actual time=16332083.323..16332311.434 rows=1040449 loops=3)
+                     Sort Key: lineitem.l_shipmode
+                     Sort Method: external merge  Disk: 37608kB
+                     Worker 0:  Sort Method: external merge  Disk: 37624kB
+                     Worker 1:  Sort Method: external merge  Disk: 38048kB
+                     ->  Parallel Hash Join  (cost=4548993.50..23077894.81 rows=1207511 width=27) (actual time=15133691.202..16330284.391 rows=1040449 loops=3)
+                           Hash Cond: (lineitem.l_orderkey = orders.o_orderkey)
+                           ->  Parallel Seq Scan on lineitem  (cost=0.00..18145382.60 rows=1207511 width=19) (actual time=773.784..12094207.504 rows=1040449 loops=3)
+                                 Filter: ((l_shipmode = ANY ('{RAIL,TRUCK}'::bpchar[])) AND (l_commitdate < l_receiptdate) AND (l_shipdate < l_commitdate) AND (l_receiptdate >= '1997-02-01'::date) AND (l_receiptdate < '1998-02-01 00:00:00'::timestamp without time zone))
+                                 Rows Removed by Filter: 198972185
+                           ->  Parallel Hash  (cost=3401577.33..3401577.33 rows=62497533 width=20) (actual time=2978214.446..2978214.446 rows=50000000 loops=3)
+                                 Buckets: 65536  Batches: 4096  Memory Usage: 2592kB
+                                 ->  Parallel Seq Scan on orders  (cost=0.00..3401577.33 rows=62497533 width=20) (actual time=2151.729..2745098.082 rows=50000000 loops=3)
+ Planning Time: 4436.831 ms
+ Execution Time: 16411709.502 ms
+(22 rows)

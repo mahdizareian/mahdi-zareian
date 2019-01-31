@@ -1,0 +1,20 @@
+ QUER                                                                                        Y PLAN                                                                                                                                                                  
+--------------------------------------------------------------------------------                                                                                        --------------------------------------------------------------------------------                                                                                        --
+ Finalize GroupAggregate  (cost=25454037.43..25454039.50 rows=6 width=236) (actu                                                                                        al time=2085918.556..2085918.660 rows=4 loops=1)
+   Group Key: l_returnflag, l_linestatus
+   ->  Gather Merge  (cost=25454037.43..25454038.83 rows=12 width=236) (actual t                                                                                        ime=2085918.445..2085922.869 rows=12 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Sort  (cost=25453037.40..25453037.42 rows=6 width=236) (actual time                                                                                        =2085911.640..2085911.642 rows=4 loops=3)
+               Sort Key: l_returnflag, l_linestatus
+               Sort Method: quicksort  Memory: 27kB
+               Worker 0:  Sort Method: quicksort  Memory: 27kB
+               Worker 1:  Sort Method: quicksort  Memory: 27kB
+               ->  Partial HashAggregate  (cost=25453037.16..25453037.32 rows=6                                                                                         width=236) (actual time=2085911.549..2085911.573 rows=4 loops=3)
+                     Group Key: l_returnflag, l_linestatus
+                     ->  Parallel Seq Scan on lineitem  (cost=0.00..15649549.00                                                                                         rows=245087204 width=25) (actual time=19.010..1684029.866 rows=196543400 loops=3                                                                                        )
+                           Filter: (l_shipdate <= '1998-08-23 00:00:00'::timesta                                                                                        mp without time zone)
+                           Rows Removed by Filter: 3469234
+ Planning Time: 141.603 ms
+ Execution Time: 2085923.240 ms
+(17 rows)

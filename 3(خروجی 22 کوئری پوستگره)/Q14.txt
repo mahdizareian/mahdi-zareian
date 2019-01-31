@@ -1,0 +1,20 @@
+                                                                           QUERY PLAN
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=17099586.10..17099586.12 rows=1 width=32) (actual time=17641482.111..17641482.111 rows=1 loops=1)
+   ->  Gather  (cost=17099585.87..17099586.08 rows=2 width=64) (actual time=17641447.472..17641800.431 rows=3 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Partial Aggregate  (cost=17098585.87..17098585.88 rows=1 width=64) (actual time=17641076.259..17641076.259 rows=1 loops=3)
+               ->  Parallel Hash Join  (cost=657355.58..17037715.53 rows=3478305 width=33) (actual time=17405737.497..17639357.342 rows=2578289 loops=3)
+                     Hash Cond: (lineitem.l_partkey = part.p_partkey)
+                     ->  Parallel Seq Scan on lineitem  (cost=0.00..16273507.40 rows=3478305 width=20) (actual time=3733.409..16429123.717 rows=2578289 loops=3)
+                           Filter: ((l_shipdate >= '1997-01-02'::date) AND (l_shipdate < '1997-02-02 00:00:00'::timestamp without time zone))
+                           Rows Removed by Filter: 197434345
+                     ->  Parallel Hash  (cost=496241.93..496241.93 rows=8332292 width=25) (actual time=859777.274..859777.274 rows=6666667 loops=3)
+                           Buckets: 65536  Batches: 512  Memory Usage: 2912kB
+                           ->  Parallel Seq Scan on part  (cost=0.00..496241.93 rows=8332292 width=25) (actual time=89.688..722252.402 rows=6666667 loops=3)
+ Planning Time: 4.904 ms
+ Execution Time: 17641801.216 ms
+(15 rows)
+
+CREATE VIEW

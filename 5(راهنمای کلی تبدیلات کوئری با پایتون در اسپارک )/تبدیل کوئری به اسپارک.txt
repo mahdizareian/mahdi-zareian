@@ -1,0 +1,157 @@
+diff_cat_in_train_test=test.select('Product_ID').subtract(train.select('Product_ID'))
+diff_cat_in_train_test.distinct().count()# For distict count
+Output:
+46
+..............................................................
+fifa_df.columns //Column Names
+fifa_df.count() // Row Count
+len(fifa_df.columns) //Column Count
+............................................................
+fifa_df.filter(fifa_df.MatchID=='1096').show()
+fifa_df.filter(fifa_df.MatchID=='1096').count()  //to get the count
+..............................................................
+fifa_df.filter((fifa_df.Position=='C') && (fifa_df.Event=="G40'")).show()
+.....
+fifa_df.orderBy(fifa_df.MatchID).show()
+...............................................................
+
+df1.join(df2, $"df1Key" === $"df2Key")
+.join(nation, region.R_REGIONKEY == nation.N_REGIONKEY)
+................................................
+df.select('column').where(col('column').like("%s%")).show()
+df.filter(df.column.like('%s%')).show()
+.........................
+df.groupBy("year", "sex").agg(avg("percent"), count("*"))
+..........................
+# To create DataFrame using SparkSession
+people = spark.read.parquet("...")
+department = spark.read.parquet("...")
+
+people.filter(people.age > 30).join(department, people.deptId == department.id) \
+  .groupBy(department.name, "gender").agg({"salary": "avg", "age": "max"})
+..............................................................
+Returns a new DataFrame with an alias set.
+
+Parameters:	alias – string, an alias name to be set for the DataFrame.
+>>> from pyspark.sql.functions import *
+>>> df_as1 = df.alias("df_as1")
+>>> df_as2 = df.alias("df_as2")
+>>> joined_df = df_as1.join(df_as2, col("df_as1.name") == col("df_as2.name"), 'inner')
+>>> joined_df.select("df_as1.name", "df_as2.name", "df_as2.age").collect()
+[Row(name='Bob', name='Bob', age=5), Row(name='Alice', name='Alice', age=2)]
+...............................................................
+>>> df1 = spark.createDataFrame(
+...         [("a", 1), ("a", 1), ("a", 1), ("a", 2), ("b",  3), ("c", 4)], ["C1", "C2"])
+>>> df2 = spark.createDataFrame([("a", 1), ("b", 3)], ["C1", "C2"])
+>>> df1.exceptAll(df2).show()
++---+---+
+| C1| C2|
++---+---+
+|  a|  1|
+|  a|  1|
+|  a|  2|
+|  c|  4|
+
+...............................................................
+>>> df.explain()
+== Physical Plan ==
+Scan ExistingRDD[age#0,name#1]
+>>> df.explain(True)
+== Parsed Logical Plan ==
+...
+== Analyzed Logical Plan ==
+...
+== Optimized Logical Plan ==
+...
+== Physical Plan ==
+...
+...............................................................
+>>> df1.intersectAll(df2).sort("C1", "C2").show()
+ÌãÚ ÇæÑ? ãÔÊÑ˜ÇÊ
+...............................................................
+df.printSchema()
+...........................................................
+selectExpr(*expr)[source]
+Projects a set of SQL expressions and returns a new DataFrame.
+
+This is a variant of select() that accepts SQL expressions.
+
+>>> df.selectExpr("age * 2", "abs(age)").collect()
+[Row((age * 2)=4, abs(age)=2), Row((age * 2)=10, abs(age)=5)]
+............................................................
+toDF(*cols)[source]
+Returns a new class:DataFrame that with new specified column names
+
+Parameters:	cols – list of new column names (string)
+>>> df.toDF('f1', 'f2').collect()
+[Row(f1=2, f2='Alice'), Row(f1=5, f2='Bob')]
+............................................................
+>>> gdf = df.groupBy(df.name)
+>>> sorted(gdf.agg({"*": "count"}).collect())
+[Row(name='Alice', count(1)=1), Row(name='Bob', count(1)=1)]
+>>> from pyspark.sql import functions as F
+>>> sorted(gdf.agg(F.min(df.age)).collect())
+[Row(name='Alice', min(age)=2), Row(name='Bob', min(age)=5)]
+...........................................................
+>>> df.select(df.name, df.age.between(2, 4)).show()
+..........................................................
+>>> df.filter(df.name.contains('o')).collect()
+[Row(age=5, name='Bob')]
+................................................
+endswith(other)
+String ends with. Returns a boolean Column based on a string match.
+
+Parameters:	other – string at end of line (do not use a regex $)
+>>> df.filter(df.name.endswith('ice')).collect()
+[Row(age=2, name='Alice')]
+>>> df.filter(df.name.endswith('ice$')).collect()
+[]
+..........................................................
+isin(*cols)[source]
+A boolean expression that is evaluated to true if the value of this expression is contained by the evaluated values of the arguments.
+
+>>> df[df.name.isin("Bob", "Mike")].collect()
+[Row(age=5, name='Bob')]
+>>> df[df.age.isin([1, 2, 3])].collect()
+[Row(age=2, name='Alice')]
+..........................................................
+like(other)
+SQL like expression. Returns a boolean Column based on a SQL LIKE match.
+
+Parameters:	other – a SQL LIKE pattern
+See rlike() for a regex version
+
+>>> df.filter(df.name.like('Al%')).collect()
+[Row(age=2, name='Alice')]
+............................................................
+
+It worked :)
+
+I had to use the negation operator (~) instead of the 'not' keyword.
+
+df.where(~ col("_c2").like("XY6%")).show(5)
+.............................................................
+
+otherwise(value)[source]
+Evaluates a list of conditions and returns one of multiple possible result expressions. If Column.otherwise() is not invoked, None is returned for unmatched conditions.
+
+See pyspark.sql.functions.when() for example usage.
+
+Parameters:	value – a literal value, or a Column expression.
+>>> from pyspark.sql import functions as F
+>>> df.select(df.name, F.when(df.age > 3, 1).otherwise(0)).show()
++-----+-------------------------------------+
+| name|CASE WHEN (age > 3) THEN 1 ELSE 0 END|
++-----+-------------------------------------+
+|Alice|                                    0|
+|  Bob|                                    1|
+............................................................
+ÎæäÏä ÇÒ ORC
+>>> df =  spark.read.orc('python/test_support/sql/orc_partitioned')
+>>> df.dtypes
+[('a', 'bigint'), ('b', 'int'), ('c', 'int')]
+...........................................................
+df.groupBy(someExpr).agg(somAgg).where(somePredicate) 
+...........................................................
+–Semi-join operator: used for unnesting EXISTS, IN, and ANY subqueries
+•Will return the tuple if one record is matched (but in inner join looks for all matched records)

@@ -1,0 +1,8 @@
+from pyspark import SparkContext
+from pyspark.sql import SQLContext
+
+nation = sqlContext.read.parquet("hdfs://namenode:8020/mahdi-parquet-data/nation.parquet")
+
+nation.write.mode('overwrite').format("com.databricks.spark.avro").save("hdfs://namenode:8020/mahdi-avro-data/nation.avro")
+
+nation = spark.read.format("com.databricks.spark.avro").load("hdfs://namenode:8020/mahdi-avro-data/nation.avro")

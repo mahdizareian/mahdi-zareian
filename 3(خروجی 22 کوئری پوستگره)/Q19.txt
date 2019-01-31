@@ -1,0 +1,19 @@
+  QUERY PLAN                                                                                                                                                                                                                                                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=20797622.48..20797622.49 rows=1 width=32) (actual time=2856.619..2856.619 rows=1 loops=1)
+   ->  Gather  (cost=768041.44..20797622.47 rows=1 width=12) (actual time=2856.609..2870.453 rows=0 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         ->  Parallel Hash Join  (cost=767041.44..20796622.37 rows=1 width=12) (actual time=2850.690..2850.694 rows=0 loops=3)
+               Hash Cond: (lineitem.l_partkey = part.p_partkey)
+               Join Filter: (((part.p_brand = 'BRAND#34'::bpchar) AND (part.p_container = ANY ('{"SM CASE","SM BOX","SM PACK","SM PKG"}'::bpchar[])) AND (lineitem.l_quantity >= '7'::numeric) AND (lineitem.l_quantity <= '17'::numeric) AND (part.p_size <= 5)) OR ((part.p_brand = 'BRAND#41'::bpchar) AND (part.p_container = ANY ('{"MED BAG","MED BOX","MED PKG","MED PACK"}'::bpchar[])) AND (lineitem.l_quantity >= '10'::numeric) AND (lineitem.l_quantity <= '20'::numeric) AND (part.p_size <= 10)) OR ((part.p_brand = 'BRAND#35'::bpchar) AND (part.p_container = ANY ('{"LG CASE","LG BOX","LG PACK","LG PKG"}'::bpchar[])) AND (lineitem.l_quantity >= '13'::numeric) AND (lineitem.l_quantity <= '23'::numeric) AND (part.p_size <= 15)))
+               ->  Parallel Seq Scan on lineitem  (cost=0.00..20017257.80 rows=4694525 width=25) (never executed)
+                     Filter: ((l_shipmode = ANY ('{AIR,"AIR REG"}'::bpchar[])) AND (l_shipinstruct = 'DELIVER IN PERSON'::bpchar) AND (((l_quantity >= '7'::numeric) AND (l_quantity <= '17'::numeric)) OR ((l_quantity >= '10'::numeric) AND (l_quantity <= '20'::numeric)) OR ((l_quantity >= '13'::numeric) AND (l_quantity <= '23'::numeric))))
+               ->  Parallel Hash  (cost=767041.43..767041.43 rows=1 width=30) (actual time=2850.438..2850.438 rows=0 loops=3)
+                     Buckets: 1024  Batches: 1  Memory Usage: 0kB
+                     ->  Parallel Seq Scan on part  (cost=0.00..767041.43 rows=1 width=30) (actual time=2850.300..2850.300 rows=0 loops=3)
+                           Filter: ((p_size >= 1) AND (((p_brand = 'BRAND#34'::bpchar) AND (p_container = ANY ('{"SM CASE","SM BOX","SM PACK","SM PKG"}'::bpchar[])) AND (p_size <= 5)) OR ((p_brand = 'BRAND#41'::bpchar) AND (p_container = ANY ('{"MED BAG","MED BOX","MED PKG","MED PACK"}'::bpchar[])) AND (p_size <= 10)) OR ((p_brand = 'BRAND#35'::bpchar) AND (p_container = ANY ('{"LG CASE","LG BOX","LG PACK","LG PKG"}'::bpchar[])) AND (p_size <= 15))))
+                           Rows Removed by Filter: 6666667
+ Planning Time: 0.752 ms
+ Execution Time: 2870.566 ms
+(16 rows)
